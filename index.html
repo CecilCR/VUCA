@@ -12,7 +12,7 @@
             --text-secondary: #555555;
             --accent-blue: #4a90e2;
             --accent-hover: #357abd;
-            --hint-bg: #fff3cd; /* Amarillo muy suave para pista */
+            --hint-bg: #fff3cd;
             --hint-text: #856404;
             --success-color: #27ae60;
             --error-color: #c0392b;
@@ -46,7 +46,7 @@
             color: var(--text-primary);
             font-size: 2em;
             margin-bottom: 10px;
-            margin-top: 0;
+            margin-top: 20px; /* Un poco más de espacio arriba */
             font-weight: 800;
             letter-spacing: -0.5px;
         }
@@ -83,7 +83,7 @@
             font-size: 1.1em;
             font-weight: 600;
             transition: all 0.2s ease;
-            text-align: left; /* Alineado a la izquierda para mejor lectura */
+            text-align: left;
             padding-left: 30px;
         }
 
@@ -94,7 +94,6 @@
             box-shadow: 0 5px 15px rgba(74, 144, 226, 0.2);
         }
 
-        /* Estilos para cuando se deshabilitan los botones */
         .btn.disabled {
             pointer-events: none;
             opacity: 0.6;
@@ -102,10 +101,7 @@
             color: #999;
         }
 
-        /* Área de Pista */
-        .hint-section {
-            margin-top: 25px;
-        }
+        .hint-section { margin-top: 25px; }
 
         .hint-btn {
             background: none;
@@ -129,7 +125,6 @@
             border-left: 4px solid var(--hint-text);
         }
 
-        /* NUEVO: Área de Retroalimentación (Feedback) */
         #feedback-container {
             margin-top: 25px;
             padding: 20px;
@@ -175,16 +170,34 @@
         
         .next-btn:hover { background-color: black; }
 
-        #score-display {
+        /* Estilos para los indicadores superiores */
+        .top-indicators {
             position: absolute;
             top: 20px;
-            right: 20px;
+            width: 100%;
+            left: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        .indicator-pill {
             font-weight: 700;
-            color: var(--success-color);
-            background: #e8f8f5;
             padding: 5px 15px;
             border-radius: 20px;
             font-size: 0.9em;
+        }
+
+        #score-display {
+            color: var(--success-color);
+            background: #e8f8f5;
+        }
+
+        /* NUEVO: Estilo para el contador de preguntas */
+        #question-counter {
+            color: var(--accent-blue);
+            background: #eaf2f8;
         }
 
         .hidden { display: none; }
@@ -193,7 +206,11 @@
 <body>
 
     <div class="card" id="game-card">
-        <div id="score-display">Puntos: 0</div>
+        <div class="top-indicators">
+            <div id="question-counter" class="indicator-pill">Pregunta 1/10</div>
+            <div id="score-display" class="indicator-pill">Puntos: 0</div>
+        </div>
+
         <h1>Desafío VUCA</h1>
         <div class="subtitle">Domina el caos organizacional</div>
         
@@ -224,78 +241,18 @@
     </div>
 
     <script>
-        // Base de datos actualizada con explicaciones
+        // Base de datos (sin cambios)
         const questions = [
-            { 
-                q: "¿A qué componente VUCA se refiere la 'velocidad y magnitud de los cambios' inesperados?", 
-                a: 2, 
-                options: ["Incertidumbre", "Complejidad", "Volatilidad", "Ambigüedad"], 
-                hint: "Piensa en el ejemplo de la caída repentina de las acciones de NVIDIA.",
-                explanation: "La **Volatilidad** se caracteriza por cambios rápidos e inestables, aunque no necesariamente difíciles de entender, suceden a gran velocidad."
-            },
-            { 
-                q: "Una empresa global con múltiples países, leyes y proveedores. ¿Qué elemento es?", 
-                a: 1, 
-                options: ["Volatilidad", "Complejidad", "Incertidumbre", "Ambigüedad"], 
-                hint: "Es como tratar de resolver un rompecabezas donde cada pieza afecta a las demás.",
-                explanation: "La **Complejidad** surge por la multitud de variables interconectadas. Tienes la información, pero es difícil de procesar por el volumen."
-            },
-            { 
-                q: "Según VUCA Prime, ¿cuál es el 'antídoto' frente a la Volatilidad?", 
-                a: 3, 
-                options: ["Entendimiento", "Claridad", "Agilidad", "Visión"], 
-                hint: "Cuando el camino se mueve mucho, necesitas tener muy claro hacia dónde te diriges.",
-                explanation: "Ante cambios bruscos (Volatilidad), la **Visión** te permite mantener el rumbo a largo plazo sin distraerte por las turbulencias momentáneas."
-            },
-            { 
-                q: "¿Qué escenario describe mejor la 'Ambigüedad'?", 
-                a: 2, 
-                options: ["Dólar inestable", "Ley sin fecha", "Causa-efecto confusa en producto nuevo", "Muchos competidores"], 
-                hint: "Ocurre cuando tienes la información, pero no sabes cómo interpretarla.",
-                explanation: "La **Ambigüedad** es la falta de claridad sobre el significado de un evento. Vemos el efecto, pero no entendemos la causa."
-            },
-            { 
-                q: "¿Por qué los entornos VUCA son un riesgo crítico en 'La Empresa como Sistema'?", 
-                a: 1, 
-                options: ["Aumentan impuestos", "Desestabilizan entradas y procesos", "Obligan a contratar jóvenes", "Reducen tecnología"], 
-                hint: "Piensa en cómo una tormenta externa afecta el funcionamiento interno.",
-                explanation: "Como sistema abierto, la empresa recibe impactos externos que desestabilizan sus insumos (entradas) y sus procesos internos."
-            },
-            { 
-                q: "¿Cuál es la respuesta estratégica para combatir la 'Incertidumbre'?", 
-                a: 1, 
-                options: ["Visión", "Entendimiento", "Agilidad", "Complejidad"], 
-                hint: "Si no sabes qué va a pasar, primero debes observar y escuchar.",
-                explanation: "La **Incertidumbre** se combate con **Entendimiento** (escuchar, analizar tendencias) para intentar predecir mejor el futuro."
-            },
-            { 
-                q: "Pérdida de valor masiva por una IA repentina. ¿Con qué letra se asocia?", 
-                a: 0, 
-                options: ["Volatilidad", "Incertidumbre", "Complejidad", "Ambigüedad"], 
-                hint: "Fue un cambio brusco, rápido y de gran magnitud.",
-                explanation: "Es un ejemplo clásico de **Volatilidad**: un shock repentino en el mercado que altera el valor drásticamente."
-            },
-            { 
-                q: "Frente a la 'Complejidad', la habilidad directiva recomendada es:", 
-                a: 0, 
-                options: ["Claridad", "Incertidumbre", "Rapidez ciega", "Rigidez"], 
-                hint: "Cuando todo está enredado, necesitas simplificar.",
-                explanation: "La **Claridad** (o simplicidad) es clave para desenredar la maraña de la complejidad y tomar decisiones efectivas."
-            },
-            { 
-                q: "¿Diferencia entre 'Complicado' y 'Complejo'?", 
-                a: 1, 
-                options: ["Sinónimos", "Lineal vs Impredecible", "Complejo es más fácil", "Personas vs Máquinas"], 
-                hint: "Un reloj es complicado; el clima es complejo.",
-                explanation: "Lo complicado se resuelve con expertos (pasos lógicos). Lo **Complejo** tiene patrones cambiantes que requieren experimentación."
-            },
-            { 
-                q: "¿Cuál NO es una característica de VUCA Prime?", 
-                a: 2, 
-                options: ["Agilidad", "Visión", "Control Jerárquico Rígido", "Entendimiento"], 
-                hint: "Busca la opción que suena a 'vieja escuela'.",
-                explanation: "El **Control Jerárquico Rígido** es lo opuesto a lo necesario. VUCA requiere flexibilidad y redes de colaboración."
-            }
+            { q: "¿A qué componente VUCA se refiere la 'velocidad y magnitud de los cambios' inesperados?", a: 2, options: ["Incertidumbre", "Complejidad", "Volatilidad", "Ambigüedad"], hint: "Piensa en el ejemplo de la caída repentina de las acciones de NVIDIA.", explanation: "La **Volatilidad** se caracteriza por cambios rápidos e inestables, aunque no necesariamente difíciles de entender, suceden a gran velocidad." },
+            { q: "Una empresa global con múltiples países, leyes y proveedores. ¿Qué elemento es?", a: 1, options: ["Volatilidad", "Complejidad", "Incertidumbre", "Ambigüedad"], hint: "Es como tratar de resolver un rompecabezas donde cada pieza afecta a las demás.", explanation: "La **Complejidad** surge por la multitud de variables interconectadas. Tienes la información, pero es difícil de procesar por el volumen." },
+            { q: "Según VUCA Prime, ¿cuál es el 'antídoto' frente a la Volatilidad?", a: 3, options: ["Entendimiento", "Claridad", "Agilidad", "Visión"], hint: "Cuando el camino se mueve mucho, necesitas tener muy claro hacia dónde te diriges.", explanation: "Ante cambios bruscos (Volatilidad), la **Visión** te permite mantener el rumbo a largo plazo sin distraerte por las turbulencias momentáneas." },
+            { q: "¿Qué escenario describe mejor la 'Ambigüedad'?", a: 2, options: ["Dólar inestable", "Ley sin fecha", "Causa-efecto confusa en producto nuevo", "Muchos competidores"], hint: "Ocurre cuando tienes la información, pero no sabes cómo interpretarla.", explanation: "La **Ambigüedad** es la falta de claridad sobre el significado de un evento. Vemos el efecto, pero no entendemos la causa." },
+            { q: "¿Por qué los entornos VUCA son un riesgo crítico en 'La Empresa como Sistema'?", a: 1, options: ["Aumentan impuestos", "Desestabilizan entradas y procesos", "Obligan a contratar jóvenes", "Reducen tecnología"], hint: "Piensa en cómo una tormenta externa afecta el funcionamiento interno.", explanation: "Como sistema abierto, la empresa recibe impactos externos que desestabilizan sus insumos (entradas) y sus procesos internos." },
+            { q: "¿Cuál es la respuesta estratégica para combatir la 'Incertidumbre'?", a: 1, options: ["Visión", "Entendimiento", "Agilidad", "Complejidad"], hint: "Si no sabes qué va a pasar, primero debes observar y escuchar.", explanation: "La **Incertidumbre** se combate con **Entendimiento** (escuchar, analizar tendencias) para intentar predecir mejor el futuro." },
+            { q: "Pérdida de valor masiva por una IA repentina. ¿Con qué letra se asocia?", a: 0, options: ["Volatilidad", "Incertidumbre", "Complejidad", "Ambigüedad"], hint: "Fue un cambio brusco, rápido y de gran magnitud.", explanation: "Es un ejemplo clásico de **Volatilidad**: un shock repentino en el mercado que altera el valor drásticamente." },
+            { q: "Frente a la 'Complejidad', la habilidad directiva recomendada es:", a: 0, options: ["Claridad", "Incertidumbre", "Rapidez ciega", "Rigidez"], hint: "Cuando todo está enredado, necesitas simplificar.", explanation: "La **Claridad** (o simplicidad) es clave para desenredar la maraña de la complejidad y tomar decisiones efectivas." },
+            { q: "¿Diferencia entre 'Complicado' y 'Complejo'?", a: 1, options: ["Sinónimos", "Lineal vs Impredecible", "Complejo es más fácil", "Personas vs Máquinas"], hint: "Un reloj es complicado; el clima es complejo.", explanation: "Lo complicado se resuelve con expertos (pasos lógicos). Lo **Complejo** tiene patrones cambiantes que requieren experimentación." },
+            { q: "¿Cuál NO es una característica de VUCA Prime?", a: 2, options: ["Agilidad", "Visión", "Control Jerárquico Rígido", "Entendimiento"], hint: "Busca la opción que suena a 'vieja escuela'.", explanation: "El **Control Jerárquico Rígido** es lo opuesto a lo necesario. VUCA requiere flexibilidad y redes de colaboración." }
         ];
 
         let currentQuestion = 0;
@@ -303,14 +260,15 @@
         let hintUsed = false;
 
         function loadQuestion() {
-            // Resetear estados
             hintUsed = false;
             document.getElementById('hint').style.display = 'none';
             document.getElementById('hint-trigger').style.display = 'block';
             document.getElementById('feedback-container').classList.add('hidden');
-            document.getElementById('options').classList.remove('hidden'); // Mostrar opciones
+            document.getElementById('options').classList.remove('hidden'); 
             
-            // Verificar fin del juego
+            // NUEVO: Actualizar contador de preguntas
+            document.getElementById('question-counter').innerText = `Pregunta ${currentQuestion + 1}/${questions.length}`;
+
             if (currentQuestion >= questions.length) {
                 showFinalResult();
                 return;
@@ -344,13 +302,11 @@
             const feedbackText = document.getElementById('feedback-text');
             const optionsDiv = document.getElementById('options');
             
-            // Deshabilitar botones para que no puedan clickear otra vez
             const allBtns = optionsDiv.getElementsByClassName('btn');
             for(let btn of allBtns) {
                 btn.classList.add('disabled');
             }
 
-            // Lógica de Puntos
             let isCorrect = (selectedIndex === q.a);
             
             if (isCorrect) {
@@ -363,13 +319,10 @@
                 feedbackTitle.className = "feedback-title wrong-text";
             }
 
-            // Mostrar la explicación
             feedbackText.innerHTML = q.explanation;
-
-            // Mostrar contenedor de feedback
             document.getElementById('feedback-container').classList.remove('hidden');
             document.getElementById('score-display').innerText = "Puntos: " + score;
-            document.getElementById('hint-trigger').style.display = 'none'; // Ocultar botón de pista
+            document.getElementById('hint-trigger').style.display = 'none';
         }
 
         function nextQuestion() {
@@ -381,15 +334,11 @@
             document.getElementById('quiz-container').classList.add('hidden');
             document.getElementById('result-container').classList.remove('hidden');
             document.getElementById('final-score').innerText = score + " / " + (questions.length * 10);
-            document.getElementById('score-display').style.display = 'none';
+            // Ocultar los indicadores superiores al final
+            document.querySelector('.top-indicators').style.display = 'none';
         }
 
-        // Iniciar juego
         loadQuestion();
     </script>
 </body>
 </html>
-
-       
-        
-           

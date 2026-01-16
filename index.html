@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafío VUCA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background-color: #ecf0f1;
+            color: #333;
+            width: 90%;
+            max-width: 500px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        h1 { color: #e74c3c; } /* Rojo para la intensidad VUCA */
+        .question-text { font-size: 1.2em; margin-bottom: 20px; font-weight: bold; }
+        .btn-container { display: flex; flex-direction: column; gap: 10px; }
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+        .btn:hover { background-color: #2980b9; }
+        .hint-box {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f1c40f;
+            color: #333;
+            border-radius: 5px;
+            display: none; /* Oculto por defecto */
+            font-style: italic;
+        }
+        .hint-btn { background: none; border: none; color: #7f8c8d; cursor: pointer; text-decoration: underline; margin-top: 10px;}
+        #score-display { font-weight: bold; margin-top: 20px; color: #27ae60; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="game-card">
+        <h1>Desafío VUCA 🌪️</h1>
+        <div id="quiz-container">
+            <p id="question" class="question-text">Cargando...</p>
+            <div id="options" class="btn-container"></div>
+            
+            <button class="hint-btn" onclick="toggleHint()">💡 Ver Pista (Riesgo)</button>
+            <div id="hint" class="hint-box"></div>
+            
+            <p id="score-display">Puntaje: 0</p>
+        </div>
+        <div id="result-container" class="hidden">
+            <h2>¡Juego Terminado!</h2>
+            <p id="final-score"></p>
+            <button class="btn" onclick="location.reload()">Jugar de Nuevo</button>
+        </div>
+    </div>
+
+    <script>
+        // Tus preguntas cargadas en el sistema
+        const questions = [
+            { q: "¿A qué componente VUCA se refiere la 'velocidad y magnitud de los cambios' inesperados?", a: 2, options: ["Incertidumbre", "Complejidad", "Volatilidad", "Ambigüedad"], hint: "Piensa en el ejemplo de la caída repentina de las acciones de NVIDIA." },
+            { q: "Una empresa global con múltiples países, leyes y proveedores. ¿Qué elemento es?", a: 1, options: ["Volatilidad", "Complejidad", "Incertidumbre", "Ambigüedad"], hint: "Es como tratar de resolver un rompecabezas donde cada pieza afecta a las demás." },
+            { q: "Según VUCA Prime, ¿cuál es el 'antídoto' frente a la Volatilidad?", a: 3, options: ["Entendimiento", "Claridad", "Agilidad", "Visión"], hint: "Cuando el camino se mueve mucho, necesitas tener muy claro hacia dónde te diriges." },
+            { q: "¿Qué escenario describe mejor la 'Ambigüedad'?", a: 2, options: ["Dólar inestable", "Ley sin fecha", "Causa-efecto confusa en producto nuevo", "Muchos competidores"], hint: "Ocurre cuando tienes la información, pero no sabes cómo interpretarla." },
+            { q: "¿Por qué los entornos VUCA son un riesgo crítico en 'La Empresa como Sistema'?", a: 1, options: ["Aumentan impuestos", "Desestabilizan entradas y procesos", "Obligan a contratar jóvenes", "Reducen tecnología"], hint: "Piensa en cómo una tormenta externa afecta el funcionamiento interno." },
+            { q: "¿Cuál es la respuesta estratégica para combatir la 'Incertidumbre'?", a: 1, options: ["Visión", "Entendimiento", "Agilidad", "Complejidad"], hint: "Si no sabes qué va a pasar, primero debes observar y escuchar." },
+            { q: "Pérdida de valor masiva por una IA repentina. ¿Con qué letra se asocia?", a: 0, options: ["Volatilidad", "Incertidumbre", "Complejidad", "Ambigüedad"], hint: "Fue un cambio brusco, rápido y de gran magnitud." },
+            { q: "Frente a la 'Complejidad', la habilidad directiva recomendada es:", a: 0, options: ["Claridad", "Incertidumbre", "Rapidez ciega", "Rigidez"], hint: "Cuando todo está enredado, necesitas simplificar." },
+            { q: "¿Diferencia entre 'Complicado' y 'Complejo'?", a: 1, options: ["Sinónimos", "Lineal vs Impredecible", "Complejo es más fácil", "Personas vs Máquinas"], hint: "Un reloj es complicado; el clima es complejo." },
+            { q: "¿Cuál NO es una característica de VUCA Prime?", a: 2, options: ["Agilidad", "Visión", "Control Jerárquico Rígido", "Entendimiento"], hint: "Busca la opción que suena a 'vieja escuela'." }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+
+        function loadQuestion() {
+            document.getElementById('hint').style.display = 'none'; // Ocultar pista
+            if (currentQuestion >= questions.length) {
+                showFinalResult();
+                return;
+            }
+            const q = questions[currentQuestion];
+            document.getElementById('question').innerText = q.q;
+            document.getElementById('hint').innerText = q.hint;
+            
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = ""; // Limpiar botones anteriores
+
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(index);
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        function toggleHint() {
+            document.getElementById('hint').style.display = 'block';
+        }
+
+        function checkAnswer(selectedIndex) {
+            if (selectedIndex === questions[currentQuestion].a) {
+                score += 10;
+                alert("¡Correcto! ✅");
+            } else {
+                alert("Incorrecto ❌");
+            }
+            document.getElementById('score-display').innerText = "Puntaje: " + score;
+            currentQuestion++;
+            loadQuestion();
+        }
+
+        function showFinalResult() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('result-container').classList.remove('hidden');
+            document.getElementById('final-score').innerText = "Tu puntaje final: " + score + " / " + (questions.length * 10);
+        }
+
+        // Iniciar juego
+        loadQuestion();
+    </script>
+</body>
+</html>
